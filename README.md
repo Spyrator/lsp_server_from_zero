@@ -1,6 +1,7 @@
 # Slowly building LSP compliant Language Server
-Follow code in examples to build the server from nothing to functional with **serde**, **tokio** and **warp**. Here are the steps we will break it down into:
+Follow code in examples to build the server from nothing to functional with [**serde**](https://serde.rs/), [**tokio**](https://tokio.rs/) and [**warp**](https://github.com/seanmonstar/warp). If at any point you don't understand something about these libraries, the links should be helpful.
 
+Here are the steps we will break it down into:
 1. Create simple HTTP server
 2. Turn it into minimal JSON RPC compliant server
 3. Improve typing and fletch out the details
@@ -12,6 +13,7 @@ Follow code in examples to build the server from nothing to functional with **se
 5. Improve typing and expand basic functionality
 6. Build a VSCode extension and test it
 
+
 You will need following dependencies (versions may vary):
 ```
 serde = { version = "1.0", features = ["derive"] }
@@ -21,7 +23,8 @@ warp = "0.3.4"
 ```
 
 ## 1. HTTP compliant server (DONE)
-First file just creates a HTTP server with Warp. Nothing special, 19 lines of code, including comments. If you need more info how warp works, visit their [Gtihub](https://github.com/seanmonstar/warp). For examples of features try the [examples folder](https://github.com/seanmonstar/warp/tree/master/examples).
+First file just creates a HTTP server with Warp. Nothing special, 19 lines of code, including comments. 
+
 
 Run it yourself, or use the finished example code:
 ```
@@ -43,7 +46,7 @@ We need to be compliant with [JSON-RPC 2.0 Spec](https://www.jsonrpc.org/specifi
      - jsonrpc: "2.0" (`String`, always the same)
      - medthod: `String`
      - params: we will define params later, not needed for minimal server
-     - id: `Option<StringOrNumber>` - will handle with `#[serde(untagged)]`
+     - id: `Option<StringOrNumber>` - will handle with `#[serde(untagged)]` ([serde enum representation](https://serde.rs/enum-representations.html))
 - response object
      - jsonrpc: "2.0" - same as above
      - result: `Option<String>`
