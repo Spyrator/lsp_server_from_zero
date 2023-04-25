@@ -54,7 +54,7 @@ We need to be compliant with [JSON-RPC 2.0 Spec](https://www.jsonrpc.org/specifi
          - what could possibly go wrong? 
      - id: `Option<StringOrNumber>` - same as above
 
-On top of that we will make a new Warp route and return always back to the caller the name of hte method they called.
+On top of that we'll'make a new Warp route and return the name of the method that was called.
 
 Run it yourself, or use the finished example code:
 ```
