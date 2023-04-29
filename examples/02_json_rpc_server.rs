@@ -37,7 +37,7 @@ pub enum StringOrNumber {
 
 #[tokio::main]
 async fn main() {
-    // basic server
+    // basic endopoint
     let index = warp::path::end()
         .and(warp::get()) // GET so that we can test it with browser
         .map(|| {
