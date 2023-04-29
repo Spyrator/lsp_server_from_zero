@@ -67,13 +67,19 @@ cargo run --example 02_json_rpc_server
 ```
 Test: 
 ```
-curl http://localhost:3030/json_rpc --data '{"jsonrpc": "2.0", "method": "hi", "params": {"hello": "world"},"id": "42"}' --header "Content-Type: application/json" 
+curl http://localhost:3030/json_rpc --data '{"jsonrpc": "2.0", "method": "hello", "params": {"hello": "world"},"id": "42"}' --header "Content-Type: application/json" 
 ```
 Expected result:
 ```
-{"jsonrpc":"2.0","result":"You requested method called 'hi'","id":"42"}
+{"jsonrpc":"2.0","result":"You requested method called 'hello'","id":"42"}
 ```
 
 
 ## 3. Next: Improving typing
+Until now we ignored request `parameters`, so let's define them. Let's couple the acceptable parameters with the method name using enums and `#[serde(tag = "method")]`. 
+
+It lets us avoid parsing generic js type `array | object`. We'll match on  accepted methods and use `#[serde(other)]` to reject unaccepted ones (or wrong parameters).
+
+Serde takes care of [positional arguments](https://www.jsonrpc.org/specification#parameter_structures) by default.
+
 ⚠️Work in Progress⚠️
