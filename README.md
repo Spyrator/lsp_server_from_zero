@@ -6,7 +6,7 @@ The language of choice for this example is SQL.
 Here are the steps we will break it down into:
 1. Create simple HTTP server (✅)
 2. Turn it into minimal JSON RPC compliant server (✅)
-3. Improve typing and flesh out the details (🚫)
+3. Improve typing and accept parameters (⚠️)
 4. Turn it into minimal LSP compliant server (🚫)
     - before initialize -> error: -32002
     - initialize, initialized, register/unregister capacity, set/log trace, shutdown, exit
@@ -75,11 +75,19 @@ Expected result:
 ```
 
 
-## 3. Next: Improving typing
+## 3. Improving typing and accept parameters
+### Files
+New structure with folder named as example name without the number `improve_typing` for `03_improve_typing.rs` example.
+### Parameters
 Until now we ignored request `parameters`, so let's define them. Let's couple the acceptable parameters with the method name using enums and `#[serde(tag = "method")]`. 
 
 It lets us avoid parsing generic js type `array | object`. We'll match on  accepted methods and use `#[serde(other)]` to reject unaccepted ones (or wrong parameters).
 
 Serde takes care of [positional arguments](https://www.jsonrpc.org/specification#parameter_structures) by default.
+
+### Errors
+Defined possible error in errors.rs. These are based on JSON-RPC & LSP reserved codes. For more read [LSP spec - response message](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#responseMessage).
+
+We'll change response type to use `Result` type and implement our own Serialize and Deserialize traits, because specs require the fields to be named `result` and `error`, but `Result` type deserializes to `ok` and `err`.
 
 ⚠️Work in Progress⚠️

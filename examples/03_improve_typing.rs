@@ -1,67 +1,12 @@
-use serde::{Deserialize, Serialize};
+use improve_typing::{
+    errors::{ErrorCodes, JsonRpcError},
+    request::{JsonRpcRequest, Method},
+    response::JsonRpcResponse,
+};
 use warp::Filter;
 
-// take in request - ignore parameters so far
-#[derive(Debug, Serialize, Deserialize)]
-pub struct JsonRpcRequest {
-    pub jsonrpc: String,
-    #[serde(flatten)]
-    pub method: Method,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub id: Option<StringOrNumber>,
-}
-
-// different methods that the language server will accept
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "method")]
-pub enum Method {
-    #[serde(rename = "hello")]
-    Hello { params: HelloParams },
-
-    #[serde(other)]
-    NotSupported,
-}
-
-// accepts {"jsonrpc": "2.0", "method": "hello", "params": {"hello": "string" }}
-// or      {"jsonrpc": "2.0", "method": "hello", "params": ["string"]}
-#[derive(Debug, Serialize, Deserialize)]
-pub struct HelloParams {
-    pub hello: String,
-}
-
-impl ToString for Method {
-    fn to_string(&self) -> String {
-        let a = match self {
-            Method::Hello { params: _ } => "hello",
-            Method::NotSupported => "not supported",
-        };
-
-        return a.to_string();
-    }
-}
-
-// return a response
-// - no error so far
-// - result is only String, but is valid JSON RPC already
-#[derive(Debug, Serialize, Deserialize)]
-pub struct JsonRpcResponse {
-    pub jsonrpc: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub result: Option<String>, // spec: string | number | boolean | array | object | null, we define it later
-    #[serde(skip)]
-    pub error: Option<String>, // we define it later
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub id: Option<StringOrNumber>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum StringOrNumber {
-    String(String),
-    Number(i32),
-}
+use crate::improve_typing::response::JsonRpcResult;
+mod improve_typing;
 
 #[tokio::main]
 async fn main() {
@@ -86,20 +31,35 @@ async fn main() {
         // `Content-Length` must be specified, but is everywhere automatically I guess, so no need to require it
         .and(warp::body::json())
         .map(|req: JsonRpcRequest| {
-            let res = JsonRpcResponse {
-                jsonrpc: "2.0".to_owned(),
-                result: Some(format!(
+            let result = match &req.method {
+                Method::NotSupported => Err(JsonRpcError::new(
+                    ErrorCodes::MethodNotFound,
+                    Some("The method you called is not supported".to_owned()),
+                )),
+                _ => Ok(format!(
                     "You requested method called '{}'",
                     &req.method.to_string()
                 )),
-                error: None,
+            };
+
+            let result = JsonRpcResult(result);
+
+            let response = JsonRpcResponse {
+                jsonrpc: "2.0".to_owned(),
+                result,
                 id: req.id,
             };
+
+            // println!("Response: {:#?}", &response);
+            // let json = serde_json::to_string(&response).unwrap();
+            // println!("Serialized: {:#?}", &json);
+            // let res2: JsonRpcResponse = serde_json::from_str(&json).unwrap();
+            // println!("Deserialized: {:#?}", &res2);
 
             return warp::http::Response::builder()
                 .header("Content-Type", "application/json; charset=utf-8")
                 .status(200)
-                .body(serde_json::to_string(&res).unwrap());
+                .body(serde_json::to_string(&response).unwrap());
         });
 
     // update paths so they are both included
